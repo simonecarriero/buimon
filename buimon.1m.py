@@ -36,16 +36,18 @@ def get_latest_run(token, repo_owner, repo_name, workflow_id):
     color = status_color(latest_run["status"], latest_run["conclusion"])
     resp = github_get(token, f"https://api.github.com/repos/{repo_owner}/{repo_name}/actions/runs/{latest_run['id']}/jobs?per_page=999")
     jobs = map(lambda x: f"{status_color(x['status'], x['conclusion'])} {x['name']}", resp["jobs"])
-    return (color, jobs)
+    return (latest_run["id"], color, jobs)
 
 def main():
     try:
         (token, repositories) = read_config(Path.home() / ".buimon.json")
-        runs = list(map(lambda x: tuple([x["name"]]) + get_latest_run(token, x["owner"], x["name"], x["workflow_id"]), repositories))
-        print("".join([color for (_, color, _) in runs]))
+        runs = list(map(lambda x: tuple([x["owner"], x["name"]]) + get_latest_run(token, x["owner"], x["name"], x["workflow_id"]), repositories))
+        print("".join([color for (_, _, _, color, _) in runs]))
         print("---")
-        for (name, color, jobs) in runs:
+        for (owner, name, run_id, color, jobs) in runs:
             print(f"{color} {name}")
+            print(f"--Open in GitHub | href=https://github.com/{owner}/{name}/actions/runs/{run_id}")
+            print(f"-----")
             for job in jobs:
                print(f"--{job.replace('|', '-')}") 
     except Exception as e:
