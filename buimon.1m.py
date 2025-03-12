@@ -25,8 +25,10 @@ def github_get(token, url):
 
 def status_color(status, conclusion):
     if status == "in_progress": return "🟡"
+    elif status == "pending": return "🟡"
     elif conclusion == "success": return "🟢"
     elif conclusion == "skipped": return "⚪"
+    elif conclusion == "cancelled": return "⚪"
     else: return "🔴"
 
 def get_latest_run(token, repo_owner, repo_name, workflow_id):
